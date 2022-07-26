@@ -1,7 +1,9 @@
 ![build](https://github.com/mattiasgustavsson/dos-like/workflows/build/badge.svg)
 
-# template_project
-Basic setup for building something with app.h on Windows/Linux/Mac/Web
+# Repair/Rearm
+
+Shoot-em-up game made for Global Game Jam 2020.
+
 
 ## Building
 
@@ -12,14 +14,16 @@ No build system is used, simply call the compiler from the commandline.
 
 From a Visual Studio Developer Command Prompt, do:
 ```
-  cl source\main.c
+  cl source\repair-rearm.c
 ```  
+
+For building the final release version, you probably want all optimizations enabled. There's a helper script (a windows bat file) in the `build` folder of the repo, which will build with full optimizations, and also include an application icon. It will also call the compiled exe to generate the `repair-rearm.dat` data file. See the `build\build_win.bat` file for details.
 
 
 ### Mac
 
 ```
-  clang source/main.c `sdl2-config --libs --cflags` -lGLEW -framework OpenGL -lpthread
+  clang source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -framework OpenGL -lpthread
 ```
 
 SDL2 and GLEW are required - if you don't have them installed you can do so with Homebrew by running
@@ -31,7 +35,7 @@ SDL2 and GLEW are required - if you don't have them installed you can do so with
 ### Linux
 
 ```
-  gcc source/main.c `sdl2-config --libs --cflags` -lGLEW -lGL -lm -lpthread
+  gcc source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -lGL -lm -lpthread
 ```
 
 SDL2 and GLEW are required - if you don't have them installed you can do so on Ubuntu (or wherever `apt-get` is available) by running
@@ -45,12 +49,15 @@ SDL2 and GLEW are required - if you don't have them installed you can do so on U
 
 Using WAjic:
 ```
-  wasm\node wasm\wajicup.js source/main.c main.html
+  wasm\node wasm/wajicup.js -embed repair-rearm.dat repair-rearm.dat source/repair-rearm.c repair-rearm.html
 ```
-You can embed asset files in the process with the -embed parameter. 
+
+Note that you must have generated the `repair-rearm.dat` file (by running the repair-rearm executable once with command line argument -b or --build) before running this build command.
 
 A WebAssembly build environment is required. You can download it (for Windows) here: [wasm-env](https://github.com/mattiasgustavsson/dos-like/releases/tag/wasm-env).
 Unzip it so that the `wasm` folder in the zip file is at your repository root.
 
 The wasm build environment is a compact distribution of [node](https://nodejs.org/en/download/), [clang/wasm-ld](https://releases.llvm.org/download.html),
-[WAjic](https://github.com/schellingb/wajic) and [wasm system libraries](https://github.com/emscripten-core/emscripten/tree/main/system).
+[WAjic](https://github.com/schellingb/wajic) and [wasm system libraries](https://github.com/emscripten-core/emscripten/tree/repair-rearm/system).
+
+For a final release, you probably want the web page it is embedded on to look a bit nicer - there is a helper build script `build\build_web.bat` which does this, specifying a template html file.

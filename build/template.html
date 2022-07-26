@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<link id="favicon" rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAe1BMVEWsHiGsICGqHx+pGyGpHCC4MB3cWRbbWRbZVRTRUBHRUBTOTxTQTxTPUBToeB7neB7ldh3jdR3xkinukCbyjSXtjSbrjCTriyXsiyV/mT6AmT9Tm0ZUm0ZUnEdeoEldn0hanEVcnkReoEZSk0VSlEYHUmkASmwATG4BTXBdWOicAAAAAW9yTlQBz6J3mgAAALRJREFUKM91zIsWgiAMBuA/u5iWZcXAysKszPd/wjbUox7l2zhsDAB8Fh4IgkUfzVFjObLqLLH2wGYq5AyxdcLtxgUXkgxRLCLJqOVK7PZJnMRTOPSOR16pRJqecO5cJISiC5EGKd64IG0yRpkxWmtjQDzhO4rOPFbSkbsJ5YHrbR7ueeMxluM5ZFlhC4HXUGlLa0sH787nw9nD1wNV9etx07YVao+5gbyo+asGv67bz6T+/QHAES3DoR/eYQAAAABJRU5ErkJggg==">
+<style type="text/css">
+html, body, #a {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    max-height:100%;
+    background:black;
+    color:white;
+}
+
+#a {
+    display: table;
+    max-width:100%;
+    max-height:100%;
+}
+
+#b {
+    max-width:100%;
+    max-height:100vh;
+    display: table-cell;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#wa_canvas {
+    display:block;
+    outline:0;
+    margin:0 auto;
+    width:auto;
+    object-fit: scale-down;
+    height:100vh;
+    max-width:100%;
+    max-height:100%;
+}
+
+#wa_log {
+    position: absolute; 
+    left: 0; 
+    right: 0; 
+    margin-left: auto; 
+    margin-right: auto; 
+    top: 0; 
+    bottom: 0; 
+    margin-top: auto; 
+    margin-bottom: auto; 
+    width: 300px;
+    height: 200px;
+}
+</style>
+</head>
+<body>
+<div id="a"><div id="b">
+<canvas id="wa_canvas"  oncontextmenu="event.preventDefault()"></canvas>
+<div id="wa_log"><h2>Loading...</h2></div>
+</div></div>
+<script>
+var WA = {  canvas: document.getElementById('wa_canvas'),  started: function() { document.getElementById('wa_log').style.display = 'none'; }, };
+{{{js}}}
+</script>
+</body>
+</html>
