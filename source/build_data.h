@@ -63,7 +63,7 @@ bool build_add( build_t* build, char const* filename, void* data, size_t size ) 
     index.offset = (uint32_t) buffer_position( build->data );
     index.size = (uint32_t) size;
     array_add( build->index, &index );
-    buffer_write_u8( build->data, data, (int) size );
+    buffer_write_u8( build->data, (uint8_t*)data, (int) size );
     return true;
 }
 
@@ -97,7 +97,7 @@ bool build_palette( build_t* build, char const* filename )  {
         fseek( fp, 0, SEEK_END );
         size_t size = ftell( fp );
         fseek( fp, 0, SEEK_SET );
-        build->paldither = malloc( size );
+        build->paldither = (paldither_palette_t*)malloc( size );
         fread( build->paldither, size, 1, fp );
         fclose( fp );
 
@@ -234,7 +234,7 @@ bool build_font( build_t* build, char const* filename ) {
     fclose( fp );
 
     stbtt_fontinfo font;
-    stbtt_InitFont( &font, data, stbtt_GetFontOffsetForIndex( data, 0) );
+    stbtt_InitFont( &font, (unsigned char*)data, stbtt_GetFontOffsetForIndex( (unsigned char*)data, 0) );
 
     int size = 0;
     for( int i = 1; i < 32; ++i ) {

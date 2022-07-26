@@ -4,6 +4,9 @@
 
 Shoot-em-up game made for Global Game Jam 2020.
 
+The game is written in plain C, and can be played in the browser here:
+https://mattiasgustavsson.com/wasm/repair-rearm
+
 
 ## Building
 
