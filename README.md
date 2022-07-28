@@ -61,6 +61,6 @@ A WebAssembly build environment is required. You can download it (for Windows) h
 Unzip it so that the `wasm` folder in the zip file is at your repository root.
 
 The wasm build environment is a compact distribution of [node](https://nodejs.org/en/download/), [clang/wasm-ld](https://releases.llvm.org/download.html),
-[WAjic](https://github.com/schellingb/wajic) and [wasm system libraries](https://github.com/emscripten-core/emscripten/tree/repair-rearm/system).
+[WAjic](https://github.com/schellingb/wajic) and [wasm system libraries](https://github.com/emscripten-core/emscripten/tree/main/system).
 
 For a final release, you probably want the web page it is embedded on to look a bit nicer - there is a helper build script `build\build_web.bat` which does this, specifying a template html file.
