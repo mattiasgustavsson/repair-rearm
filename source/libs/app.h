@@ -3602,6 +3602,7 @@ app_state_t app_yield( app_t* app )
         }
 
     SDL_Event e;
+    app_key_t key;
     while( SDL_PollEvent( &e ) )
         {
         if( e.type == SDL_WINDOWEVENT )
@@ -3629,18 +3630,27 @@ app_state_t app_yield( app_t* app )
                 app->has_focus = 0;
                 }
             }
-        else if( e.type == SDL_KEYDOWN )
+        else if( e.type == SDL_KEYDOWN || e.type == SDL_KEYUP )
             {
             app_input_event_t input_event;
-            input_event.type = APP_INPUT_KEY_DOWN;
-            input_event.data.key = app_internal_scancode_to_appkey( app, e.key.keysym.scancode );
-            app_internal_add_input_event( app, &input_event );
-            }
-        else if( e.type == SDL_KEYUP )
-            {
-            app_input_event_t input_event;
-            input_event.type = APP_INPUT_KEY_UP;
-            input_event.data.key = app_internal_scancode_to_appkey( app, e.key.keysym.scancode );
+            input_event.type = (e.type == SDL_KEYDOWN ? APP_INPUT_KEY_DOWN : APP_INPUT_KEY_UP);
+            key = app_internal_scancode_to_appkey( app, e.key.keysym.scancode );
+            if( key == APP_KEY_LCONTROL || key == APP_KEY_RCONTROL )
+                {
+                input_event.data.key = APP_KEY_CONTROL;
+                app_internal_add_input_event( app, &input_event );
+                }
+            else if( key == APP_KEY_LSHIFT || key == APP_KEY_RSHIFT )
+                {
+                input_event.data.key = APP_KEY_SHIFT;
+                app_internal_add_input_event( app, &input_event );
+                }
+            else if( key == APP_KEY_LMENU || key == APP_KEY_RMENU )
+                {
+                input_event.data.key = APP_KEY_MENU;
+                app_internal_add_input_event( app, &input_event );
+                }
+            input_event.data.key = key;
             app_internal_add_input_event( app, &input_event );
             }
         else if( e.type == SDL_TEXTINPUT )
