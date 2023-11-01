@@ -1,4 +1,4 @@
-![build](https://github.com/mattiasgustavsson/repair-rearm/workflows/build/badge.svg)
+![build](https://github.com/mattiasgustavsson/repair-rearm/actions/workflows/main.yml/badge.svg)
 
 # Repair/Rearm
 
