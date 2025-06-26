@@ -31,39 +31,6 @@
     #include "libs/thread.h"
 #endif
 
-#ifdef _WIN32
-    #include "libs/gamepad.h"
-#else
-    typedef struct gamepad_state_t {
-	    uint16_t buttons;
-	    uint8_t trigger_left;
-	    uint8_t trigger_right;
-	    int16_t stick_left_x;
-	    int16_t stick_left_y;
-	    int16_t stick_right_x;
-	    int16_t stick_right_y;
-	} gamepad_state_t;
-
-
-    typedef enum gamepad_button_t {
-	    GAMEPAD_DPAD_UP = 0x0001,
-	    GAMEPAD_DPAD_DOWN = 0x0002,
-	    GAMEPAD_DPAD_LEFT = 0x0004,
-	    GAMEPAD_DPAD_RIGHT = 0x0008,
-	    GAMEPAD_START = 0x0010,
-	    GAMEPAD_BACK = 0x0020,
-	    GAMEPAD_STICK_LEFT = 0x0040,
-	    GAMEPAD_STICK_RIGHT = 0x0080,
-	    GAMEPAD_SHOULDER_LEFT = 0x0100,
-	    GAMEPAD_SHOULDER_RIGHT = 0x0200,
-	    GAMEPAD_A = 0x1000,
-	    GAMEPAD_B = 0x2000,
-	    GAMEPAD_X = 0x4000,
-	    GAMEPAD_Y = 0x8000,
-	} gamepad_button_t;
-#endif
-
-
 typedef struct sound_channel_t {
     int age;
     short* sample_pairs;
@@ -76,6 +43,7 @@ typedef struct sound_channel_t {
 // Game includes
 #include "data.h"
 #include "game.h"
+#include "state_launch.h"
 #include "state_title.h"
 #include "state_credits.h"
 #include "state_intro.h"
@@ -138,7 +106,7 @@ void sound_callback( APP_S16* sample_pairs, int sample_pairs_count, void* user_d
 }
 
 
-float horiz( gamepad_state_t* state, bool left, bool right ) {
+float horiz( app_gamepad_t* state, bool left, bool right ) {
     float thresh = 0.3f;
     float x;
         
@@ -152,11 +120,11 @@ float horiz( gamepad_state_t* state, bool left, bool right ) {
         return x;
     }
 
-    if( state->buttons & GAMEPAD_DPAD_LEFT ) {
+    if( state->buttons & APP_GAMEPAD_BUTTON_DPAD_LEFT ) {
         return -1.0f;
     }
 
-    if( state->buttons & GAMEPAD_DPAD_RIGHT ) {
+    if( state->buttons & APP_GAMEPAD_BUTTON_DPAD_RIGHT ) {
         return 1.0f;
     }
 
@@ -172,7 +140,7 @@ float horiz( gamepad_state_t* state, bool left, bool right ) {
 } 
 
 
-float vert( gamepad_state_t* state, bool up, bool down ) {
+float vert( app_gamepad_t* state, bool up, bool down ) {
     float thresh = 0.3f;
     float x;
         
@@ -186,11 +154,11 @@ float vert( gamepad_state_t* state, bool up, bool down ) {
         return -x;
     }
 
-    if( state->buttons & GAMEPAD_DPAD_UP ) {
+    if( state->buttons & APP_GAMEPAD_BUTTON_DPAD_UP ) {
         return -1.0f;
     }
 
-    if( state->buttons & GAMEPAD_DPAD_DOWN ) {
+    if( state->buttons & APP_GAMEPAD_BUTTON_DPAD_DOWN ) {
         return 1.0f;
     }
 
@@ -253,8 +221,7 @@ int app_proc( app_t* app, void* user_data ) {
     app_title( app, "Repair/Rearm" );
 
     // No mouse cursor
-    APP_U32 dummy = 0;
-    app_pointer( app, 1, 1, &dummy, 0, 0 );
+    app_pointer( app, APP_POINTER_HIDE );
 
     data_t data;
     if( !load_data( &data, "repair-rearm.dat" ) ) {
@@ -271,13 +238,18 @@ int app_proc( app_t* app, void* user_data ) {
     game_t* game = (game_t*) malloc( sizeof( game_t ) );
     game_init( game, &data, screen, 200, 320 );
 
+    state_launch_register( game );
     state_title_register( game );
     state_credits_register( game );
     state_intro_register( game );
     state_level_register( game );
     state_repair_register( game );
 
-    gamestate_switch( game, GAMESTATE_TITLE );
+    #ifdef __wasm__
+        gamestate_switch( game, GAMESTATE_LAUNCH );
+    #else
+        gamestate_switch( game, GAMESTATE_TITLE );
+    #endif
 
     frametimer_t* frametimer = frametimer_create( NULL );
     frametimer_lock_rate( frametimer, 60 );
@@ -294,15 +266,11 @@ int app_proc( app_t* app, void* user_data ) {
             stbi_image_free( (stbi_uc*) pixels );
         }
     }
-
-    #ifdef _WIN32
-        gamepad_t* gamepad = gamepad_create( NULL );
-    #endif
-
+  
     uint32_t palette[ 256 ];
     load_palette( game, "data/pal.png", palette );
 
-    input_t input;
+    input_t input = {};
     bool key_left = false;
     bool key_right = false;
     bool key_up = false;
@@ -328,9 +296,11 @@ int app_proc( app_t* app, void* user_data ) {
     while( app_yield( app ) != APP_STATE_EXIT_REQUESTED && !exit_flag ) {
         frametimer_update( frametimer );
         app_input_t appinp = app_input( app );
+        input.click = false;
         for( int i = 0; i < appinp.count; ++i ) {
             app_input_event_t* event = &appinp.events[ i ];
             if( event->type == APP_INPUT_KEY_DOWN ) {
+                if( event->data.key == APP_KEY_LBUTTON ) input.click = true;
                 if( event->data.key == APP_KEY_LEFT ) key_left = true;
                 if( event->data.key == APP_KEY_RIGHT ) key_right = true;
                 if( event->data.key == APP_KEY_UP ) key_up = true;
@@ -353,18 +323,16 @@ int app_proc( app_t* app, void* user_data ) {
             }
         }
 
-        gamepad_state_t padstate = { 0 };
-        #ifdef _WIN32
-            gamepad_read( gamepad, 0, &padstate );
-        #endif
+        app_gamepad_t padstate = { 0 };
+        app_gamepad( app, 0, &padstate, NULL );        
 
         fire = false;
-        if( key_control || ( padstate.buttons & GAMEPAD_A ) != 0 ) {
+        if( key_control || ( padstate.buttons & APP_GAMEPAD_BUTTON_A ) != 0 ) {
             fire = true;
         }
 
         action = false;
-        if( key_enter || key_space || ( padstate.buttons & GAMEPAD_B ) != 0 || ( padstate.buttons & GAMEPAD_START ) != 0 ) {
+        if( key_enter || key_space || ( padstate.buttons & APP_GAMEPAD_BUTTON_B ) != 0 || ( padstate.buttons & APP_GAMEPAD_BUTTON_START ) != 0 ) {
             action = true;
         }
 
@@ -420,9 +388,6 @@ int app_proc( app_t* app, void* user_data ) {
     free_data( &data );
     frametimer_destroy( frametimer );
     crtemu_destroy( crtemu );
-    #ifdef _WIN32
-        gamepad_destroy( gamepad );
-    #endif
     return EXIT_SUCCESS;
 }
 
@@ -459,7 +424,7 @@ int main( int argc, char** argv ) {
         }
     #endif
 
-    return app_run( app_proc, NULL, NULL, NULL, NULL );
+    return app_run( app_proc, NULL, NULL, NULL );
 }
 
 
@@ -487,7 +452,6 @@ int main( int argc, char** argv ) {
 #else
     #define APP_SDL
 #endif
-#define APP_LOG( ctx, level, message )
 #include "libs/app.h"
 
 #define ARRAY_IMPLEMENTATION
@@ -565,9 +529,3 @@ int main( int argc, char** argv ) {
         #endif
     }
 #endif
-
-#ifdef _WIN32
-    #define GAMEPAD_IMPLEMENTATION
-    #include "libs/gamepad.h"
-#endif
-

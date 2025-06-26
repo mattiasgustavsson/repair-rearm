@@ -9,6 +9,7 @@ typedef struct sound_t {
 
 typedef enum gamestate_t {
     GAMESTATE_NONE,
+    GAMESTATE_LAUNCH,
     GAMESTATE_TITLE,
     GAMESTATE_CREDITS,
     GAMESTATE_INTRO,
@@ -106,6 +107,7 @@ typedef struct sprite_order_t {
 
 
 typedef struct input_t {
+    bool click;
     bool fire;
     bool action;
     float horiz;
