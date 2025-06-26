@@ -4066,7 +4066,7 @@ void app_cancel_exit( app_t* app ) {
 
 
 WAJIC(void, app_js_title, (char const* title), {
-    window.top.document.title = MStrGet(title);
+    document.title = MStrGet(title);
 })
 
 
