@@ -270,7 +270,7 @@ int app_proc( app_t* app, void* user_data ) {
     uint32_t palette[ 256 ];
     load_palette( game, "data/pal.png", palette );
 
-    input_t input = {};
+    input_t input = { false };
     bool key_left = false;
     bool key_right = false;
     bool key_up = false;
