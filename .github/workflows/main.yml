@@ -43,7 +43,7 @@ jobs:
         run: brew install sdl2 glew
       - name: build repair-rearm
         run: |
-          clang source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -framework OpenGL -lpthread
+          clang source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -framework OpenGL -lpthread -I$(brew --prefix glew)/include
   build-macos-cpp:
     runs-on: macOS-latest
     steps:
@@ -52,7 +52,7 @@ jobs:
         run: brew install sdl2 glew
       - name: build repair-rearm
         run: |
-          clang++ source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -framework OpenGL -lpthread
+          clang++ source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -framework OpenGL -lpthread -I$(brew --prefix glew)/include
   build-linux-gcc:
     runs-on: ubuntu-latest
     steps:
@@ -65,17 +65,29 @@ jobs:
       - name: build repair-rearm
         run: |
           gcc source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -lGL -lm -lpthread
+  build-linux-gcc-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -qq libsdl2-dev
+          sudo apt-get install -qq libglew-dev
+      - name: build repair-rearm
+        run: |
+          gcc -xc++ source/repair-rearm.c `sdl2-config --libs --cflags` -lGLEW -lGL -lm -lpthread
   build-wasm:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
       - uses: robinraju/release-downloader@v1
         with:
-          repository: "mattiasgustavsson/dos-like"
-          tag: "wasm-env"
-          fileName: "dos-like-wasm-build-env-win.zip"
+          repository: "mattiasgustavsson/template_project"
+          tag: "wasm-build-tools"
+          fileName: "wasm-build-tools-win.zip"
       - name: install dependencies
-        run: 7z x dos-like-wasm-build-env-win.zip
+        run: 7z x wasm-build-tools-win.zip
       - name: build repair-rearm
         run: |          
             wasm\node wasm\wajicup.js source/repair-rearm.c repair-rearm.html
